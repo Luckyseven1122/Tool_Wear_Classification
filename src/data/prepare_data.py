@@ -4,6 +4,7 @@ from datetime import timedelta
 import numpy as np
 import os
 from pathlib import Path
+import utils
 
 
 def create_metadata(timestamps_collector, length, duration, offset=0):
@@ -127,8 +128,8 @@ def main(project_dir, machine_name):
 
     print(">>> retrieving relevant data...")
     # retrieve whole data
-    load = data_dict["load_collector"]
-    speed = data_dict["speed_collector"]
+    load = data_dict["load_collector"]  # list (collector)
+    speed = data_dict["speed_collector"]  # list (collector)
 
     # create a matching descriptive DataFrame
     metadata = pd.DataFrame.from_dict(data=meta_dict, orient="columns")
@@ -142,7 +143,7 @@ if __name__ == "__main__":
     load, speed, metadata = main(project_dir, machine_name)
 
     # save relevant processes with corresponding metadata
-    interim_dir_path = os.path.join(project_dir, "data", "02_intermediate")
+    interim_dir_path = utils.get_interim_dir_path(project_dir)
     print(">>> saving compressed array using savez_compressed...")
     np.savez_compressed(os.path.join(interim_dir_path, "data"), load=load, speed=speed)
     print(">>> saving metadata at {}...".format(interim_dir_path))

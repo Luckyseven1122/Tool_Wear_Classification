@@ -6,31 +6,13 @@ import os
 from pathlib import Path
 import pickle
 from scipy.signal import correlate
-from tslearn.utils import to_time_series_dataset
 import matplotlib.pyplot as plt
+import utils
 
 
 def get_failure_indicies(metadata):
     """Returns failure indicies"""
     return metadata[metadata.failure == 1].index.to_list()
-
-
-def get_interim_dir_path(project_dir):
-    return os.path.join(project_dir, "data", "02_intermediate")
-
-
-def array_of_np_objects_to_collector(array):
-    assert type(array) == np.ndarray, "argument type must be a numpy array"
-    return list(array)
-
-
-def to_same_length_time_series_dataset(data_collector):
-    """Transforms data_collector containing arrays of different lengths 
-    into a time series data with same length throught zero-padding"""
-    X_ts = to_time_series_dataset(data_collector)
-    X_ts[~np.isfinite(X_ts)] = 0  # nans are replaced with zeros
-    X_ts = X_ts[:, :, 0]  # new shape
-    return X_ts
 
 
 def cross_correlation_normalized(x0, x1, coefficient=False):
@@ -116,30 +98,14 @@ def create_labels_from_metadata(metadata):
     return np.array(labels)
 
 
-def main(project_dir):
-    # get path
-    interim_dir_path = get_interim_dir_path(project_dir)
-
-    # load data from interim_dir_path as collectors
-    loaded = np.load(os.path.join(interim_dir_path, "data.npz"), allow_pickle=True)
-    collector_load = array_of_np_objects_to_collector(loaded["load"])
-    collector_speed = array_of_np_objects_to_collector(loaded["speed"])
-    metadata = pd.read_pickle(os.path.join(interim_dir_path, "metadata"))
-
-    # transform collectors into timeseries
-    X_load = to_same_length_time_series_dataset(collector_load)
-    X_speed = to_same_length_time_series_dataset(collector_speed)
-
-    # create labels
-    labels_linear = create_labels_from_metadata(metadata)
-
-    return labels_linear
-
-
 if __name__ == "__main__":
     project_dir = Path(__file__).resolve().parents[2]
-    main(project_dir)
+    interim_dir_path = utils.get_interim_dir_path(project_dir)
+    metadata = pd.read_pickle(os.path.join(interim_dir_path, "metadata"))
+    labels_linear = create_labels_from_metadata(metadata)
+
     # save labels
+    interim_dir_path = utils.get_interim_dir_path(project_dir)
     np.save(os.path.join(interim_dir_path, "labels_linear"), labels_linear)
 
 # project_dir = "/home/adnene33/Documents/FM/Tool-Wear-Classification"
