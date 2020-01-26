@@ -5,7 +5,10 @@ import os
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 
+import utils
 import prepare_data
+import prepare_labels
+import process_dataset
 
 
 @click.command()
@@ -17,17 +20,28 @@ def main(input_filepath, output_filepath):
     """
 
     machine_name = "PerschmannHermleC32USpindle"
-    raw_dir_path = os.path.join(project_dir, "data", "raw")
-    interim_dir_path = os.path.join(project_dir, "data", "interim")
-    processes_dir_path = os.path.join(project_dir, "data", "processes")
+    raw_dir_path = utils.get_raw_dir_path(project_dir)
+    interim_dir_path = utils.get_interim_dir_path(project_dir)
+    processed_dir_path = utils.get_processed_dir_path(project_dir)
 
     # load relevant data collectors after selection
-    load_collector, speed_collector, metadata = prepare_data.main(
+    collector_load, collector_speed, metadata = prepare_data.main(
         project_dir, machine_name
     )
-    print("load_collector.type = {}".format(type(load_collector)))
-    print("load_collector.length = {}".format(len(load_collector)))
+    X_load = utils.to_same_length_time_series_dataset(collector_load)
+    X_speed = utils.to_same_length_time_series_dataset(collector_speed)
 
+    # get labels
+    labels = prepare_labels.create_labels_from_metadata(metadata)
+    """TO DO: transform labels into categories, then one hot encode"""
+    
+    # compute autocorrelation
+    X_load_autocorr = process_dataset.to_autocorrelation_dataset(X_load)
+    X_speed_autocorr = process_dataset.to_autocorrelation_dataset(X_speed)
+    
+    # 
+
+    print("LENGTH LABEL VECTOR {}".format(len(labels)))
     print("project_dir: {}".format(project_dir))
     print("FINISHED")
 

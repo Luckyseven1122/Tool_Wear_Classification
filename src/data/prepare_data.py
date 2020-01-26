@@ -156,4 +156,4 @@ if __name__ == "__main__":
     # np.save(os.path.join(interim_dir_path, "speed"), speed, allow_pickle=True)
 
 
-# project_dir = "/home/adnene33/Documents/FM/Tool-Wear-Classification"
+# project_dir = "/home/adnene33/Documents/FM/Perschmann_Tool_Wear"
